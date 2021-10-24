@@ -11,12 +11,62 @@
     BoxLayout:
         size_hint: 1, 1
         orientation: 'vertical'
-        BoxLayout:
+        padding: 10, 10, 0, 10
+
+        ScrollView:
+            id: view
+            do_scroll_x: True
+            do_scroll_y: False
+            orientation: 'vertical'
             size_hint: 1, 0.5
-            id: modulation
+            valign: 'middle'
+            bar_width: 4
+            bar_color: 1, 1, 1, 1
+            bar_inactive_color: 1, 1, 1, 0.5
+            scroll_type: ['content']
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint: None, 1
+                width: view.width*root.zoom
+                padding: 0, 0, 5, 0
+                BoxLayout:
+                    id: modulation
+                    size_hint_x: 1
+                    size_hint_y: 1
+
+# without scroll
+#    BoxLayout:
+#        size_hint: 1, 1
+#        orientation: 'vertical'
+#        padding: 10, 10, 0, 10
+#        BoxLayout:
+#            size_hint: 1, 0.5
+#            id: modulation
 
         BoxLayout:
-            size_hint: 1, 0.5
+            id: zoom
+            orientation: 'horizontal'
+            size_hint: 1, 0.1
+            padding: 10
+
+            Button:
+                text: '-'
+                size_hint_x: None
+                width: self.height
+                on_release: root.update_zoom(self.text)
+
+            Label:
+                text: str(int(root.zoom)) + 'x'
+
+            Button:
+                text: '+'
+                size_hint_x: None
+                width: self.height
+                on_release: root.update_zoom(self.text)
+
+        BoxLayout:
+            size_hint: 1, 0.1
             orientation: 'vertical'
 
             Label:
@@ -28,3 +78,6 @@
                 max: 20
                 step: 0.5
                 on_value: root.update_plot(freq.value)
+
+        BoxLayout:
+            size_hint: 1, 0.3
