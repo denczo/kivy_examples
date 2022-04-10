@@ -1,0 +1,9 @@
+**/__pycache__
+**/build
+**/.buildozer/
+**/dist
+**/.vscode
+**/.idea
+**/bin
+**/keystores
+**/test.spec

@@ -1,3 +1,4 @@
+import kivy
 from kivy.app import App
 from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
