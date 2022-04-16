@@ -3,10 +3,10 @@ from audiostream import get_output, AudioSample
 
 
 class AudioPlayer:
-    def __init__(self, channels=1, rate=22050, buffer_size=1024, fade_seq=256):
+    def __init__(self, channels, rate, buffer_size, fade_seq):
         super().__init__()
         self.rate = rate
-        self.chunk_size = buffer_size+fade_seq
+        self.chunk_size = buffer_size
         self.fade_seq = fade_seq
         self.stream = get_output(
             channels=channels, rate=rate, buffersize=buffer_size, encoding=16)
@@ -14,9 +14,11 @@ class AudioPlayer:
         print("AudioPlayer Chunksize ", self.chunk_size)
         print("Sampling Rate ", self.rate)
         self.chunk = None
+        self.audio_data = np.zeros(0)
+        self.audio_pos = 0
         self.pos = 0
         self.playing = False
-        self.smoother = Smoother(self.fade_seq)
+        # self.smoother = Smoother(self.fade_seq)
         self.freq = 20
 
     def set_freq(self, freq):
@@ -35,9 +37,13 @@ class AudioPlayer:
 
     def render_audio(self, pos):
         start = pos
-        end = pos + (self.chunk_size + self.fade_seq)
+        end = pos + self.chunk_size
         x_audio = np.arange(start, end) / self.rate
         return np.sin(2*np.pi*self.freq*x_audio)
+
+    def fade_out(self, signal, length):
+        amp_decrease = np.linspace(1, 0, length)
+        return signal[-length:]*amp_decrease
 
     def run(self):
         self.sample = AudioSample()
@@ -47,19 +53,27 @@ class AudioPlayer:
 
         while self.playing:
             # smoothing
-            chunk = self.smoother.smooth_transition(
-                self.render_audio(self.pos))
-            self.smoother.buffer = chunk[-self.fade_seq:]
-            chunk = self.get_bytes(chunk[:self.chunk_size])
-            self.sample.write(chunk)
+            # chunk = self.smoother.smooth_transition(
+            # self.render_audio(self.pos))
+            # self.smoother.buffer = chunk[-self.fade_seq:]
+            self.chunk = self.render_audio(self.pos)
+            np.concatenate(
+                (self.audio_data, self.chunk),  axis=0)
+            self.chunk = self.get_bytes(self.chunk)
+            self.sample.write(self.chunk)
             self.pos += self.chunk_size
-            if not self.playing:
-                self.sample.stop()
+
+        # self.chunk = self.fade_out(self.render_audio(self.pos), 256)
+        self.chunk = self.render_audio(self.pos)
+        self.chunk_visible = self.chunk
+        self.chunk = self.get_bytes(self.chunk)
+        self.sample.write(self.chunk)
+        self.sample.stop()
+        self.audio_pos = self.pos
+        self.pos = 0
 
     def stop(self):
         self.playing = False
-        self.sample.stop()
-        self.pos = 0
 
 
 class Smoother:
@@ -82,7 +96,20 @@ class Smoother:
             raise AttributeError("size of parameter {} doesn't fit size of buffer {}".format(
                 size_value, self.fade_seq))
 
+    def smooth_start(self, signal):
+        start = signal[:self.fade_seq]
+        smoothed_start = [a * b for a, b in zip(self.coefficients, start)]
+        signal[:self.fade_seq] = smoothed_start
+        return signal
+
+    def smooth_end(self, signal):
+        end = signal[-self.fade_seq:]
+        smoothed_end = [a * b for a, b in zip(self.coefficientsR, end)]
+        signal[-self.fade_seq:] = smoothed_end
+        return signal
+
     # smooths transition between chunks to prevent discontinuities
+
     def smooth_transition(self, signal):
         buffer = [a * b for a, b in zip(self.coefficientsR, self.buffer)]
         # fade in

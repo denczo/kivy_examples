@@ -64,9 +64,9 @@
 
             Slider:
                 id: freq
-                min: 20
-                max: 100
-                step: 0.5
+                min: 50
+                max: 200
+                step: 1
                 on_value: 
                     root.update_plot(freq.value)
                     root.player.set_freq(freq.value)
@@ -75,6 +75,9 @@
             size_hint: 1, 0.3
             padding: 0, 20, 10, 0
 
+            Button:
+                text: 'render audio'
+                on_release: root.plot_audio()
 
             ToggleButton:
                 id: play

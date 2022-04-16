@@ -7,6 +7,9 @@ import numpy as np
 
 from tools import AudioPlayer
 
+audio_data = []
+audio_pos = 0
+
 
 class MainApp(App):
 
@@ -38,7 +41,7 @@ class MainGrid(BoxLayout):
                            draw_border=False,
                            x_grid_label=True, y_grid_label=False)
         # Mono, Sampling Rate, Chunksize, Fade Sequence
-        self.player = AudioPlayer(1, 22500, 512, 256)
+        self.player = AudioPlayer(1, 44100, 512, 512)
         self.ids.modulation.add_widget(self.graph)
         self.plot_x = np.linspace(0, 1, self.samples)
         self.plot_y = np.zeros(self.samples)
@@ -49,6 +52,14 @@ class MainGrid(BoxLayout):
     def update_plot(self, freq):
         self.plot_y = np.sin(2*np.pi*freq*self.plot_x)
         self.plot.points = [(x, self.plot_y[x]) for x in range(self.samples)]
+
+    def plot_audio(self):
+        self.graph.xmax = self.player.audio_pos
+        self.graph.x_ticks_major = 0
+        print(self.player.audio_pos, self.player.audio_data.size)
+        self.plot_y = self.player.audio_data
+        self.plot.points = [(x, self.plot_y[x])
+                            for x in range(self.player.audio_pos)]
 
     def update_zoom(self, value):
         if value == '+' and self.zoom < 8:
@@ -65,6 +76,12 @@ class MainGrid(BoxLayout):
         else:
             self.ids.play.text = '[b]PLAY[/b]'
             self.player.stop()
+            print(audio_data)
+            # self.plot_y = self.player.chunk_visible
+            # print("SIZE", self.player.chunk_visible.size)
+            # print(self.player.chunk_visible)
+            # self.plot.points = [(x, self.plot_y[x])
+            #                     for x in range(self.samples)]
 
 
 MainApp().run()
