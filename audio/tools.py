@@ -56,6 +56,7 @@ class AudioPlayer:
         self.stream.add_sample(self.sample)
         self.sample.play()
         self.playing = True
+        self.pos = 0
 
         while self.playing:
             self.chunk = self.render_audio(self.pos, self.old_freq)
@@ -68,21 +69,19 @@ class AudioPlayer:
             if self.freq != self.old_freq:
                 self.chunk = self.fade_out(self.chunk, 256)
                 self.pos = 0
-                self.audio_data = self.chunk
                 self.old_freq = self.freq
 
-            self.audio_data = self.chunk
-            self.chunk = self.get_bytes(self.chunk)
-            self.sample.write(self.chunk)
+            self.write_audio_data()
 
         self.chunk = self.fade_out(
             self.render_audio(self.pos, self.old_freq), 256)
+        self.write_audio_data()
+        # self.sample.stop()
+
+    def write_audio_data(self):
         self.audio_data = self.chunk
         self.chunk = self.get_bytes(self.chunk)
         self.sample.write(self.chunk)
-        # self.sample.stop()
-        self.audio_pos = self.pos
-        self.pos = 0
 
     def stop(self):
         self.playing = False

@@ -8,7 +8,6 @@ import numpy as np
 from tools import AudioPlayer
 
 audio_data = []
-audio_pos = 0
 
 
 class MainApp(App):
