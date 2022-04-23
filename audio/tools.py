@@ -10,11 +10,8 @@ class AudioPlayer:
         self.stream = get_output(
             channels=channels, rate=rate, buffersize=chunk_size, encoding=16)
         self.sample = AudioSample()
-        print("AudioPlayer Chunksize ", self.chunk_size)
-        print("Sampling Rate ", self.rate)
         self.chunk = None
         self.audio_data = np.zeros(0)
-        self.audio_pos = 0
         self.pos = 0
         self.playing = False
         self.freq = 20
@@ -24,16 +21,10 @@ class AudioPlayer:
         self.old_freq = self.freq
         self.freq = freq
 
-    def end(self):
-        self.stop()
-        del self.stream
-        del self.sample
-
     @staticmethod
     def get_bytes(chunk):
         # chunk is scaled and converted from float32 to int16 bytes
         return (chunk * 32767).astype('int16').tobytes()
-        # return (chunk * 32767).astype('int8').tobytes()
 
     def render_audio(self, pos, freq):
         start = pos
@@ -46,11 +37,6 @@ class AudioPlayer:
         signal[-length:] *= amp_decrease
         return signal
 
-    def fade_in(self, signal, length):
-        amp_increase = np.linspace(0, 1, length)
-        signal[:length] *= amp_increase
-        return signal
-
     def run(self):
         self.sample = AudioSample()
         self.stream.add_sample(self.sample)
@@ -60,10 +46,6 @@ class AudioPlayer:
 
         while self.playing:
             self.chunk = self.render_audio(self.pos, self.old_freq)
-
-            if self.pos <= 0:
-                self.chunk = self.fade_in(self.chunk, 256)
-
             self.pos += self.chunk_size
 
             if self.freq != self.old_freq:
