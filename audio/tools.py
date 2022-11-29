@@ -7,13 +7,15 @@ class AudioPlayer:
         super().__init__()
         self.rate = rate
         self.chunk_size = chunk_size
+        # initialize the engine and get an output device; can be initialized only once
         self.stream = get_output(
             channels=channels, rate=rate, buffersize=chunk_size, encoding=16)
+        # create instance of AudioSample to handle the audio stream (output) e.g. play and stop
         self.sample = AudioSample()
         print("AudioPlayer Chunksize ", self.chunk_size)
         print("Sampling Rate ", self.rate)
         self.chunk = None
-        self.audio_data = np.zeros(0)
+        self.audio_data = np.zeros(chunk_size)
         self.audio_pos = 0
         self.pos = 0
         self.playing = False
@@ -23,12 +25,7 @@ class AudioPlayer:
     def set_freq(self, freq):
         self.old_freq = self.freq
         self.freq = freq
-
-    def end(self):
-        self.stop()
-        del self.stream
-        del self.sample
-
+   
     @staticmethod
     def get_bytes(chunk):
         # chunk is scaled and converted from float32 to int16 bytes
@@ -81,6 +78,7 @@ class AudioPlayer:
     def write_audio_data(self):
         self.audio_data = self.chunk
         self.chunk = self.get_bytes(self.chunk)
+        # write bytes of chunk to internal ring buffer
         self.sample.write(self.chunk)
 
     def stop(self):

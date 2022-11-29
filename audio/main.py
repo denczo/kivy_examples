@@ -7,8 +7,6 @@ import numpy as np
 
 from tools import AudioPlayer
 
-audio_data = []
-
 
 class MainApp(App):
 
@@ -17,10 +15,15 @@ class MainApp(App):
         return self.app
 
     def init_thread(self):
-        self.playback_thread = threading.Thread(target=self.app.play_result)
+        self.playback_thread = threading.Thread(target=self.app.player.run)
         self.playback_thread.setDaemon(True)
         self.playback_thread.start()
+        print("Playback Thread", self.playback_thread.native_id, "started")
+        print("Main Thread", threading.main_thread().native_id)
 
+    def exit_thread(self):
+        self.playback_thread.join()
+        print("Playback Thread", self.playback_thread.native_id, "stopped")
 
 class MainGrid(BoxLayout):
 
@@ -52,11 +55,11 @@ class MainGrid(BoxLayout):
         self.plot_y = np.sin(2*np.pi*freq*self.plot_x)
         self.plot.points = [(x, self.plot_y[x]) for x in range(self.samples)]
 
-    def plot_audio(self):
-        self.graph.xmax = self.player.audio_data.size
-        self.plot_y = self.player.audio_data
-        self.plot.points = [(x, self.plot_y[x])
-                            for x in range(self.player.audio_data.size)]
+    # def plot_audio(self):
+    #     self.graph.xmax = self.player.audio_data.size
+    #     self.plot_y = self.player.audio_data
+    #     self.plot.points = [(x, self.plot_y[x])
+    #                         for x in range(self.player.audio_data.size)]
 
     def update_zoom(self, value):
         if value == '+' and self.zoom < 8:
@@ -69,10 +72,11 @@ class MainGrid(BoxLayout):
     def play_result(self):
         if self.ids.play.state == 'down':
             self.ids.play.text = '[b]STOP[/b]'
-            self.player.run()
+            App.get_running_app().init_thread()
         else:
             self.ids.play.text = '[b]PLAY[/b]'
             self.player.stop()
+            App.get_running_app().exit_thread()
 
 
 MainApp().run()

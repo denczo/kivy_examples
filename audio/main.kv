@@ -64,6 +64,8 @@
 
             Slider:
                 id: freq
+                # min: 1
+                # max: 20
                 min: 50
                 max: 200
                 step: 1
@@ -75,13 +77,14 @@
             size_hint: 1, 0.3
             padding: 0, 20, 10, 0
 
-            Button:
-                text: '[b]RENDER CHUNK[b]'
-                on_release: root.plot_audio()
-                markup: True
+            # Button:
+            #     text: '[b]RENDER CHUNK[b]'
+            #     on_release: root.plot_audio()
+            #     markup: True
                 
             ToggleButton:
                 id: play
                 text: '[b]PLAY[b]'
-                on_release: app.init_thread()
+                #on_release: app.init_thread()
+                on_release: root.play_result()
                 markup: True
