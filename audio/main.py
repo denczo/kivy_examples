@@ -16,6 +16,7 @@ class MainApp(App):
 
     def init_thread(self):
         self.playback_thread = threading.Thread(target=self.app.player.run)
+        # daemon threads don't wait for main thread
         self.playback_thread.setDaemon(True)
         self.playback_thread.start()
         print("Playback Thread", self.playback_thread.native_id, "started")
@@ -48,19 +49,15 @@ class MainGrid(BoxLayout):
         self.plot_x = np.linspace(0, 1, self.samples)
         self.plot_y = np.zeros(self.samples)
         self.plot = LinePlot(color=[1, 1, 0, 1], line_width=1.5)
+        # adds plot to the graph widget
         self.graph.add_plot(self.plot)
         self.update_plot(1)
 
     def update_plot(self, freq):
         self.plot_y = np.sin(2*np.pi*freq*self.plot_x)
+        # draws plot
         self.plot.points = [(x, self.plot_y[x]) for x in range(self.samples)]
-
-    # def plot_audio(self):
-    #     self.graph.xmax = self.player.audio_data.size
-    #     self.plot_y = self.player.audio_data
-    #     self.plot.points = [(x, self.plot_y[x])
-    #                         for x in range(self.player.audio_data.size)]
-
+   
     def update_zoom(self, value):
         if value == '+' and self.zoom < 8:
             self.zoom *= 2

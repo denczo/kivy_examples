@@ -1,4 +1,3 @@
-import threading
 from kivy.app import App
 from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -7,8 +6,6 @@ import numpy as np
 import multiprocessing as mp
 from multiprocessing import Pool
 import ctypes as c
-from kivy.clock import Clock
-from random import randrange
 
 
 samples = 4096
@@ -115,7 +112,6 @@ class MainGrid(BoxLayout):
         self.graph_bottom_right.add_plot(self.plot_bottom_right)
 
         self.update_freq(4)
-        # self.update_plot_single_core(10)
 
     def update_plot_multi_core(self, freq):
         pool.apply(task)
@@ -123,11 +119,6 @@ class MainGrid(BoxLayout):
         self.plot_bottom_left.points = [(x, shared_array_np[x]) for x in range(self.samples, self.samples*2)]
         self.plot_top_right.points = [(x, shared_array_np[x]) for x in range(self.samples*2, self.samples*3)]
         self.plot_bottom_right.points = [(x, shared_array_np[x]) for x in range(self.samples*3, self.samples*4)]
-   
-
-    def update_plot_single_core(self, freq):
-        self.plot_y = np.sin(2*np.pi*freq*self.plot_x)
-        self.plot.points = [(x, self.plot_y[x]) for x in range(self.samples)]
   
     def update_freq(self, value):
         # with shared_value.get_lock():

@@ -50,7 +50,7 @@ class AudioPlayer:
         while self.playing:
             self.chunk = self.render_audio(self.pos, self.old_freq)
             self.pos += self.chunk_size
-
+            
             if self.freq != self.old_freq:
                 self.chunk = self.fade_out(self.chunk, 256)
                 self.pos = 0
