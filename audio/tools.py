@@ -12,9 +12,8 @@ class AudioPlayer:
             channels=channels, rate=rate, buffersize=chunk_size, encoding=16)
         # create instance of AudioSample to handle the audio stream (output) e.g. play and stop
         self.sample = AudioSample()
-        self.chunk = None
-        self.audio_data = np.zeros(chunk_size)
-        self.audio_pos = 0
+        self.chunk = np.zeros(chunk_size)
+        # indicator
         self.pos = 0
         self.playing = False
         self.freq = 20
@@ -24,11 +23,6 @@ class AudioPlayer:
         self.old_freq = self.freq
         self.freq = freq
    
-    @staticmethod
-    def get_bytes(chunk):
-        # chunk is scaled and converted from float32 to int16 bytes
-        return (chunk * 32767).astype('int16').tobytes()
-
     def render_audio(self, pos, freq):
         start = pos
         end = pos + self.chunk_size
@@ -40,12 +34,22 @@ class AudioPlayer:
         signal[-length:] *= amp_decrease
         return signal
 
+    @staticmethod
+    def get_bytes(chunk):
+        # chunk is scaled and converted from float32 to int16 bytes
+        return (chunk * 32767).astype('int16').tobytes()
+    
+    def write_audio_data(self):
+        self.chunk = self.get_bytes(self.chunk)
+        # write bytes of chunk to internal ring buffer
+        self.sample.write(self.chunk)
+
     def run(self):
-        self.sample = AudioSample()
         self.stream.add_sample(self.sample)
         self.sample.play()
         self.playing = True
         self.pos = 0
+        self.freq_change = False
 
         while self.playing:
             self.chunk = self.render_audio(self.pos, self.old_freq)
@@ -55,19 +59,13 @@ class AudioPlayer:
                 self.chunk = self.fade_out(self.chunk, 256)
                 self.pos = 0
                 self.old_freq = self.freq
-
+                
             self.write_audio_data()
 
         self.chunk = self.fade_out(
             self.render_audio(self.pos, self.old_freq), 256)
         self.write_audio_data()
         # self.sample.stop()
-
-    def write_audio_data(self):
-        self.audio_data = self.chunk
-        self.chunk = self.get_bytes(self.chunk)
-        # write bytes of chunk to internal ring buffer
-        self.sample.write(self.chunk)
 
     def stop(self):
         self.playing = False

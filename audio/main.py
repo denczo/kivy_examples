@@ -49,6 +49,8 @@ class MainGrid(BoxLayout):
         self.plot_x = np.linspace(0, 1, self.samples)
         self.plot_y = np.zeros(self.samples)
         self.plot = LinePlot(color=[1, 1, 0, 1], line_width=1.5)
+        self.old_freq = 0
+        self.freq = 0
         # adds plot to the graph widget
         self.graph.add_plot(self.plot)
         self.update_plot(1)
@@ -57,7 +59,7 @@ class MainGrid(BoxLayout):
         self.plot_y = np.sin(2*np.pi*freq*self.plot_x)
         # draws plot
         self.plot.points = [(x, self.plot_y[x]) for x in range(self.samples)]
-   
+
     def update_zoom(self, value):
         if value == '+' and self.zoom < 8:
             self.zoom *= 2
