@@ -7,7 +7,12 @@ This repository is a collection of example projects to learn how to use differen
 - Graphs
     - Plot Graphs with the Widget Kivy Garden Graph
     - Configured Buildozer.spec file to create .apk or .aab
-- Audio (Work in Progress)
-    - Realtime Audio Processing
+- Audio
+    - Realtime Audio Processing with Library Audiostream
+    - Configured Buildozer.spec file to create .apk
+    - Simultaniously play and change frequency (threading)
+- Multicore (Work in Progress)
+    - Rendering of graphs is done on multiple cores
+    - Use of the library multiprocessing
 
 
