@@ -62,10 +62,11 @@ class AudioPlayer:
                 
             self.write_audio_data()
 
-        self.chunk = self.fade_out(
-            self.render_audio(self.pos, self.old_freq), 256)
-        self.write_audio_data()
-        # self.sample.stop()
+        # self.chunk = self.fade_out(
+        #     self.render_audio(self.pos, self.old_freq), 256)
+        # self.write_audio_data()
+        # important for threading otherwise a new thread cannot be initialized
+        self.sample.stop()
 
     def stop(self):
         self.playing = False
